@@ -1,7 +1,6 @@
 import { CartItem, Coupon, Product } from "../../types.ts";
 import { useCart } from "../hooks/index.ts";
-import { ItemCard } from "../components/Cart/ItemCard.tsx";
-import { CartCard } from "../components/Cart/CartCard.tsx";
+import { CartCard, ItemCard } from "../components/Cart";
 import { TitleMenu } from "../components/Common/TitleMenu.tsx";
 
 interface Props {
