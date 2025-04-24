@@ -1,11 +1,18 @@
-// useCart.ts
-import { useState } from "react";
 import { CartItem, Coupon, Product } from "../../types";
-import { calculateCartTotal, updateCartItemQuantity } from "../models/cart";
+import { calculateCartTotal } from "../models/cart";
+import { useLocalStorage } from "./useLocalStorage";
 
 export const useCart = () => {
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
+  const [cart, setCart] = useLocalStorage<CartItem[]>("cart", []);
+  const [selectedCoupon, setSelectedCoupon] = useLocalStorage<Coupon | null>(
+    "coupon",
+    null
+  );
+
+  const getRemainingStock = (product: Product) => {
+    const cartItem = cart.find((item) => item.product.id === product.id);
+    return product.stock - (cartItem?.quantity || 0);
+  };
 
   const addToCart = (product: Product) => {
     const remainingStock = getRemainingStock(product);
@@ -34,7 +41,21 @@ export const useCart = () => {
 
   const updateQuantity = (productId: string, newQuantity: number) => {
     setCart((prevCart) =>
-      updateCartItemQuantity(prevCart, productId, newQuantity)
+      prevCart
+        .map((item) => {
+          if (item.product.id === productId) {
+            const maxQuantity = item.product.stock;
+            const updatedQuantity = Math.max(
+              0,
+              Math.min(newQuantity, maxQuantity)
+            );
+            return updatedQuantity > 0
+              ? { ...item, quantity: updatedQuantity }
+              : null;
+          }
+          return item;
+        })
+        .filter((item): item is CartItem => item !== null)
     );
   };
 
@@ -44,11 +65,6 @@ export const useCart = () => {
 
   const calculateTotal = () => {
     return calculateCartTotal(cart, selectedCoupon);
-  };
-
-  const getRemainingStock = (product: Product) => {
-    const cartItem = cart.find((item) => item.product.id === product.id);
-    return product.stock - (cartItem?.quantity || 0);
   };
 
   return {

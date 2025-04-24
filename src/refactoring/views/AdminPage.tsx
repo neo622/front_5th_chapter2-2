@@ -7,6 +7,7 @@ import {
   NewProductForm,
 } from "../components/Admin";
 import { useProductManager } from "../hooks";
+import { validateProductFields } from "../utils/validation.ts";
 interface Props {
   products: Product[];
   coupons: Coupon[];
@@ -43,6 +44,9 @@ export const AdminPage = ({
   // 수정 완료 핸들러 함수 추가
   const handleEditComplete = () => {
     if (editingProduct) {
+      if (validateProductFields(editingProduct)) {
+        alert("상품의 모든 칸을 입력해주세요");
+      }
       onProductUpdate(editingProduct);
       setEditingProduct(null);
     }
