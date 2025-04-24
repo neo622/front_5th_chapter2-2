@@ -1,4 +1,5 @@
 import { CartItem } from "../../../types";
+import { Button } from "../Common/Button";
 
 interface Props {
   cartItem: CartItem;
@@ -17,7 +18,7 @@ export const CartCard = ({
     updateQuantity(cartItem.product.id, cartItem.quantity + 1);
   };
   const handleDecreaseQuantity = () => {
-    updateQuantity(cartItem.product.id, cartItem.quantity + 1);
+    updateQuantity(cartItem.product.id, cartItem.quantity - 1);
   };
 
   return (
@@ -38,24 +39,29 @@ export const CartCard = ({
         </span>
       </div>
       <div>
-        <button
+        <Button
           onClick={handleDecreaseQuantity}
-          className="bg-gray-300 text-gray-800 px-2 py-1 rounded mr-1 hover:bg-gray-400"
+          variant="secondary"
+          className="px-2 py-1 mr-1"
         >
           -
-        </button>
-        <button
+        </Button>
+
+        <Button
           onClick={handleIncreaseQuantity}
-          className="bg-gray-300 text-gray-800 px-2 py-1 rounded mr-1 hover:bg-gray-400"
+          variant="secondary"
+          className="px-2 py-1 mr-1"
         >
           +
-        </button>
-        <button
+        </Button>
+
+        <Button
           onClick={() => removeFromCart(cartItem.product.id)}
-          className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+          variant="danger"
+          className="px-2 py-1"
         >
           삭제
-        </button>
+        </Button>
       </div>
     </div>
   );

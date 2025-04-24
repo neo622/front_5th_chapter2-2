@@ -1,4 +1,5 @@
 import { Product } from "../../../types";
+import { Button } from "../Common/Button";
 
 interface Props {
   product: Product;
@@ -49,17 +50,17 @@ export const ItemCard = ({
           ))}
         </ul>
       )}
-      <button
+      <Button
         onClick={() => onAddToCart(product)}
-        className={`w-full px-3 py-1 rounded ${
-          remainingStock > 0
-            ? "bg-blue-500 text-white hover:bg-blue-600"
-            : "bg-gray-300 text-gray-500 cursor-not-allowed"
-        }`}
+        variant={remainingStock > 0 ? "primary" : "secondary"}
+        fullWidth
         disabled={remainingStock <= 0}
+        className={
+          remainingStock <= 0 ? "text-gray-500 cursor-not-allowed" : ""
+        }
       >
         {remainingStock > 0 ? "장바구니에 추가" : "품절"}
-      </button>
+      </Button>
     </div>
   );
 };
