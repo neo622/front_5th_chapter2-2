@@ -1,9 +1,19 @@
 import { useState } from "react";
 import { describe, expect, test } from "vitest";
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  within,
+  renderHook,
+} from "@testing-library/react";
 import { CartPage } from "../../refactoring/views/CartPage";
 import { AdminPage } from "../../refactoring/views/AdminPage";
+import { useLocalStorage } from "../../refactoring/hooks";
+import { validateProductFields } from "../../refactoring/utils/validation";
 import { Coupon, Product } from "../../types";
+import { beforeEach } from "node:test";
 
 const mockProducts: Product[] = [
   {
@@ -259,5 +269,91 @@ describe("advanced > ", () => {
 
       expect($newCoupon).toHaveTextContent("새 쿠폰 (NEW10):10% 할인");
     });
+  });
+});
+
+describe("useLocalStorage >", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+  test("초기값을 localStorage에서 불러올 수 있다.", () => {
+    localStorage.setItem("test-key", JSON.stringify(["item1", "item2"]));
+
+    const { result } = renderHook(() =>
+      useLocalStorage<string[]>("test-key", [])
+    );
+
+    expect(result.current[0]).toEqual(["item1", "item2"]);
+  });
+
+  test("초기값이 없을 경우 기본값으로 초기화된다.", () => {
+    const { result } = renderHook(() =>
+      useLocalStorage<string[]>("empty-key", ["default"])
+    );
+
+    expect(result.current[0]).toEqual(["default"]);
+  });
+
+  test("값을 변경하면 localStorage에도 반영된다.", () => {
+    const { result } = renderHook(() =>
+      useLocalStorage<string[]>("update-key", [])
+    );
+
+    act(() => {
+      result.current[1](["a", "b"]);
+    });
+
+    expect(localStorage.getItem("update-key")).toBe(JSON.stringify(["a", "b"]));
+  });
+});
+
+describe("validateProductFields > ", () => {
+  const validProduct: Product = {
+    id: "1",
+    name: "상품명",
+    price: 1000,
+    stock: 10,
+    discounts: [
+      {
+        quantity: 5,
+        rate: 0.1,
+      },
+    ],
+  };
+
+  test("모든 필드가 유효하면 true를 반환한다.", () => {
+    expect(validateProductFields(validProduct)).toBe(true);
+  });
+
+  test("null을 전달하면 false를 반환한다.", () => {
+    expect(validateProductFields(null)).toBe(false);
+  });
+
+  test("name이 빈 문자열이면 false를 반환한다.", () => {
+    const invalid = { ...validProduct, name: "" };
+    expect(validateProductFields(invalid)).toBe(false);
+  });
+
+  test("price가 NaN이면 false를 반환한다.", () => {
+    const invalid = { ...validProduct, price: NaN };
+    expect(validateProductFields(invalid)).toBe(false);
+  });
+
+  test("stock이 음수이면 false를 반환한다.", () => {
+    const invalid = { ...validProduct, stock: -1 };
+    expect(validateProductFields(invalid)).toBe(false);
+  });
+
+  test("discounts가 빈 배열이면 false를 반환한다.", () => {
+    const invalid = { ...validProduct, discounts: [] };
+    expect(validateProductFields(invalid)).toBe(false);
+  });
+
+  test("discount 항목의 rate가 0 이하이면 false를 반환한다.", () => {
+    const invalid = {
+      ...validProduct,
+      discounts: [{ quantity: 10, rate: 0 }],
+    };
+    expect(validateProductFields(invalid)).toBe(false);
   });
 });
